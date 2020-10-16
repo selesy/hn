@@ -41,3 +41,31 @@ func (i *Item) UnmarshalJSON(data []byte) error {
 
 	return nil
 }
+
+type User struct {
+	ID        string    // The user's unique username. Case-sensitive. Required.
+	Delay     int       // Delay in minutes between a comment's creation and its visibility to other users.
+	Created   time.Time // Creation date of the user, in Unix Time.
+	Karma     int       // The user's karma.
+	About     string    // The user's optional self-description. HTML.
+	Submitted []int     // List of the user's stories, polls and comments.
+}
+
+func (u *User) UnmarshalJSON(data []byte) error {
+	type Alias User
+
+	aux := &struct {
+		Created int64
+		*Alias
+	}{
+		Alias: (*Alias)(u),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	u.Created = time.Unix(aux.Created, 0).UTC()
+
+	return nil
+}

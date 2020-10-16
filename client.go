@@ -43,3 +43,10 @@ func (c Client) Item(ctx context.Context, id int) (Item, error) {
 
 	return item, ref.Get(ctx, &item)
 }
+
+func (c Client) User(ctx context.Context, id string) (User, error) {
+	ref := c.db.NewRef(fmt.Sprintf("v0/user/%s", id))
+	user := User{}
+
+	return user, ref.Get(ctx, &user)
+}
