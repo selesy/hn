@@ -33,7 +33,7 @@ func (i *Item) UnmarshalJSON(data []byte) error {
 		Alias: (*Alias)(i),
 	}
 
-	if err := json.Unmarshal(data, &aux); err != nil {
+	if err := json.Unmarshal(data, aux); err != nil {
 		return err
 	}
 
@@ -61,7 +61,7 @@ func (u *User) UnmarshalJSON(data []byte) error {
 		Alias: (*Alias)(u),
 	}
 
-	if err := json.Unmarshal(data, &aux); err != nil {
+	if err := json.Unmarshal(data, aux); err != nil {
 		return err
 	}
 
