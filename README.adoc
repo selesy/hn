@@ -1,0 +1,17 @@
+== HN
+
+Provides a client library for YCombinator's Hacker News website.
+
+=== Usage
+
+Documentation for the HN client library are provided as GoDocs and can
+be viewed by running `go doc -all selesy/hn` (within a module that uses
+it) or by visiting https://pkg.go.dev/github.com/selesy/hn.  Examples in this documentation show queries that are the equivalent of those provided with those shown in the HN API reference.
+
+=== References
+
+The following links provide the specifications for retriving HN data:
+
+- https://blog.ycombinator.com/hacker-news-api/
+- https://github.com/HackerNews/API
+- https://firebase.google.com/docs/libraries/
