@@ -11,9 +11,10 @@ import (
 
 const (
 	HackerNewsAPI = "https://hacker-news.firebaseio.com"
-	APIVersion    = "v0"
 
-	ItemPath = "item?"
+	APIVersion = "v0"
+	ItemPath   = APIVersion + "/item/%d"
+	UserPath   = APIVersion + "/user/%s"
 )
 
 type Client struct {
@@ -38,14 +39,14 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error
 }
 
 func (c Client) Item(ctx context.Context, id int) (Item, error) {
-	ref := c.db.NewRef(fmt.Sprintf("v0/item/%d", id))
+	ref := c.db.NewRef(fmt.Sprintf(ItemPath, id))
 	item := Item{}
 
 	return item, ref.Get(ctx, &item)
 }
 
 func (c Client) User(ctx context.Context, id string) (User, error) {
-	ref := c.db.NewRef(fmt.Sprintf("v0/user/%s", id))
+	ref := c.db.NewRef(fmt.Sprintf(UserPath, id))
 	user := User{}
 
 	return user, ref.Get(ctx, &user)
