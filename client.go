@@ -6,7 +6,7 @@ import (
 
 	firebase "firebase.google.com/go/v4"
 	db "firebase.google.com/go/v4/db"
-	option "google.golang.org/api/option"
+	"google.golang.org/api/option"
 )
 
 const (
@@ -17,10 +17,28 @@ const (
 	UserPath   = APIVersion + "/user/%s"
 )
 
+/*
+Client provides a consistent interface to the HN API.
+*/
 type Client struct {
-	db *db.Client
+	db           *db.Client
+	disableEtags bool
 }
 
+/*
+DefaultClient creates a new HN client with charactistics that are
+appropriate for most users calling the HN API as follows:
+
+  - No authentication is required.
+  - ETags are used to determine whether an item or user has changed.
+*/
+func DefaultClient(ctx context.Context) (*Client, error) {
+	return NewClient(ctx, option.WithoutAuthentication()) //, DisableETags())
+}
+
+/*
+NewClient creates a new HN client using the provided API options.
+*/
 func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error) {
 	cfg := firebase.Config{
 		DatabaseURL: HackerNewsAPI,
@@ -38,6 +56,9 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error
 	}, err
 }
 
+/*
+Item retrieves the news item with the provided id from the HN API.
+*/
 func (c Client) Item(ctx context.Context, id int) (Item, error) {
 	ref := c.db.NewRef(fmt.Sprintf(ItemPath, id))
 	item := Item{}
@@ -45,6 +66,9 @@ func (c Client) Item(ctx context.Context, id int) (Item, error) {
 	return item, ref.Get(ctx, &item)
 }
 
+/*
+User retrieves the news item with the provided id from the HN API.
+*/
 func (c Client) User(ctx context.Context, id string) (User, error) {
 	ref := c.db.NewRef(fmt.Sprintf(UserPath, id))
 	user := User{}
