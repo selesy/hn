@@ -8,7 +8,6 @@ import (
 	"github.com/selesy/hn"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/api/option"
 )
 
 func TestNewClient(t *testing.T) {
@@ -20,7 +19,7 @@ func TestNewClient(t *testing.T) {
 func TestItem(t *testing.T) {
 	ctx := context.Background()
 
-	c, err := hn.NewClient(ctx, option.WithoutAuthentication())
+	c, err := hn.DefaultClient(ctx)
 	require.NoError(t, err)
 
 	item, err := c.Item(ctx, 8863)
@@ -63,7 +62,7 @@ func TestItem(t *testing.T) {
 func TestUser(t *testing.T) {
 	ctx := context.Background()
 
-	c, err := hn.NewClient(ctx, option.WithoutAuthentication())
+	c, err := hn.DefaultClient(ctx)
 	require.NoError(t, err)
 
 	user, err := c.User(ctx, "jl")
