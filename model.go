@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+/*
+Item contains the attributes of an HN item.
+
+See: https://github.com/HackerNews/API#items
+*/
 type Item struct {
 	ID          int       // The item's unique id.
 	Type        string    // The type of item. One of "job", "story", "comment", "poll", or "pollopt".
@@ -23,6 +28,11 @@ type Item struct {
 	Deleted     bool      // if the item is deleted.
 }
 
+/*
+UnmarshalJSON implements encoding/json.Unmarshaler for HN items.
+
+https://pkg.go.dev/encoding/json#Unmarshaler
+*/
 func (i *Item) UnmarshalJSON(data []byte) error {
 	type Alias Item
 
@@ -42,6 +52,11 @@ func (i *Item) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+/*
+User contains the attributes of an HN user.
+
+See: https://github.com/HackerNews/API#users
+*/
 type User struct {
 	ID        string    // The user's unique username. Case-sensitive. Required.
 	Delay     int       // Delay in minutes between a comment's creation and its visibility to other users.
@@ -51,6 +66,11 @@ type User struct {
 	Submitted []int     // List of the user's stories, polls and comments.
 }
 
+/*
+UnmarshalJSON implements encoding/json.Unmarshaler for HN users.
+
+https://pkg.go.dev/encoding/json#Unmarshaler
+*/
 func (u *User) UnmarshalJSON(data []byte) error {
 	type Alias User
 
