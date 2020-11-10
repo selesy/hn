@@ -59,6 +59,18 @@ func TestItem(t *testing.T) {
 	assert.Equal(t, exp, item)
 }
 
+func TestMaxItem(t *testing.T) {
+	ctx := context.Background()
+
+	c, err := hn.DefaultClient(ctx)
+	require.NoError(t, err)
+
+	max, err := c.MaxItem(ctx)
+	require.NoError(t, err)
+
+	assert.GreaterOrEqual(t, max, 25068978)
+}
+
 func TestUser(t *testing.T) {
 	ctx := context.Background()
 

@@ -12,9 +12,10 @@ import (
 const (
 	HackerNewsAPI = "https://hacker-news.firebaseio.com"
 
-	APIVersion = "v0"
-	ItemPath   = APIVersion + "/item/%d"
-	UserPath   = APIVersion + "/user/%s"
+	APIVersion  = "v0"
+	ItemPath    = APIVersion + "/item/%d"
+	MaxItemPath = APIVersion + "/maxitem"
+	UserPath    = APIVersion + "/user/%s"
 )
 
 /*
@@ -64,6 +65,16 @@ func (c Client) Item(ctx context.Context, id int) (Item, error) {
 	item := Item{}
 
 	return item, ref.Get(ctx, &item)
+}
+
+/*
+MaxItem returns the id of the last item created.
+*/
+func (c Client) MaxItem(ctx context.Context) (int, error) {
+	ref := c.db.NewRef(MaxItemPath)
+	max := 0
+
+	return max, ref.Get(ctx, &max)
 }
 
 /*
