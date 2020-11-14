@@ -71,6 +71,22 @@ func TestMaxItem(t *testing.T) {
 	assert.GreaterOrEqual(t, max, 25068978)
 }
 
+func TestNewStories(t *testing.T) {
+	ctx := context.Background()
+
+	c, err := hn.DefaultClient(ctx)
+	require.NoError(t, err)
+
+	items, err := c.NewStories(ctx)
+	require.NoError(t, err)
+
+	assert.Len(t, items, 500)
+
+	for _, id := range items {
+		assert.GreaterOrEqual(t, id, 25000000)
+	}
+}
+
 func TestUser(t *testing.T) {
 	ctx := context.Background()
 

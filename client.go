@@ -12,10 +12,11 @@ import (
 const (
 	HackerNewsAPI = "https://hacker-news.firebaseio.com"
 
-	APIVersion  = "v0"
-	ItemPath    = APIVersion + "/item/%d"
-	MaxItemPath = APIVersion + "/maxitem"
-	UserPath    = APIVersion + "/user/%s"
+	APIVersion     = "v0"
+	ItemPath       = APIVersion + "/item/%d"
+	MaxItemPath    = APIVersion + "/maxitem"
+	NewStoriesPath = APIVersion + "/newstories"
+	UserPath       = APIVersion + "/user/%s"
 )
 
 /*
@@ -34,7 +35,7 @@ appropriate for most users calling the HN API as follows:
   - ETags are used to determine whether an item or user has changed.
 */
 func DefaultClient(ctx context.Context) (*Client, error) {
-	return NewClient(ctx, option.WithoutAuthentication()) //, DisableETags())
+	return NewClient(ctx, option.WithoutAuthentication()) // , DisableETags())
 }
 
 /*
@@ -75,6 +76,16 @@ func (c Client) MaxItem(ctx context.Context) (int, error) {
 	max := 0
 
 	return max, ref.Get(ctx, &max)
+}
+
+/*
+NewStories returns a list of item ids for the 500 newest stories.
+*/
+func (c Client) NewStories(ctx context.Context) ([]int, error) {
+	ref := c.db.NewRef(NewStoriesPath)
+	idList := []int{}
+
+	return idList, ref.Get(ctx, &idList)
 }
 
 /*
