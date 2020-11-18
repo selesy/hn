@@ -5,12 +5,67 @@ import (
 	"time"
 )
 
+type ID int
+
+/*
+Remote is an interface that represents a base HN object stored in the
+Firebase server.  Path and ETag accessors and mutators are provided so
+that the interface's implementation can be embedded without being
+exported.
+*/
+type Remote interface {
+	Path() string
+	SetPath(string)
+	ETag() string
+	SetETag(string)
+}
+
+type remote struct {
+	path string
+	etag string
+}
+
+func (r remote) Path() string {
+	return r.path
+}
+
+func (r *remote) SetPath(path string) {
+	r.path = path
+}
+
+func (r remote) ETag() string {
+	return r.etag
+}
+
+func (r *remote) SetETag(etag string) {
+	r.etag = etag
+}
+
+/*
+IDList provides a type that can maintain the path to one of the HN lists
+along with the most recently retrieve ETag and the list of IDs itself.
+*/
+type IDList struct {
+	remote
+	IDs []ID
+}
+
+/*
+UnmarshalJSON implements encoding/json.Unmarshaler for HN id lists.
+
+https://pkg.go.dev/encoding/json#Unmarshaler
+*/
+func (l *IDList) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, &l.IDs)
+}
+
 /*
 Item contains the attributes of an HN item.
 
 See: https://github.com/HackerNews/API#items
 */
 type Item struct {
+	remote
 	ID          int       // The item's unique id.
 	Type        string    // The type of item. One of "job", "story", "comment", "poll", or "pollopt".
 	By          string    // The username of the item's author.
@@ -58,6 +113,7 @@ User contains the attributes of an HN user.
 See: https://github.com/HackerNews/API#users
 */
 type User struct {
+	remote
 	ID        string    // The user's unique username. Case-sensitive. Required.
 	Delay     int       // Delay in minutes between a comment's creation and its visibility to other users.
 	Created   time.Time // Creation date of the user, in Unix Time.

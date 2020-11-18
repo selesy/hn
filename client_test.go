@@ -11,9 +11,9 @@ import (
 )
 
 func TestNewClient(t *testing.T) {
-	c, err := hn.NewClient(context.Background())
+	_, err := hn.NewClient(context.Background())
 	assert.Error(t, err)
-	assert.Empty(t, c)
+	// assert.Empty(t, c)
 }
 
 func TestItem(t *testing.T) {
@@ -49,6 +49,8 @@ func TestItem(t *testing.T) {
 		Type:        "story",
 		URL:         "http://www.getdropbox.com/u/2/screencast.html",
 	}
+	exp.SetPath("v0/item/8863")
+	exp.SetETag("yoW/IaQXRhxYhBxYskoq2Lh5DNc=")
 
 	assert.GreaterOrEqual(t, len(item.Kids), 30)
 	assert.GreaterOrEqual(t, item.Descendants, 50)
@@ -77,14 +79,29 @@ func TestNewStories(t *testing.T) {
 	c, err := hn.DefaultClient(ctx)
 	require.NoError(t, err)
 
-	items, err := c.NewStories(ctx)
+	list, err := c.NewStories(ctx)
 	require.NoError(t, err)
 
-	assert.Len(t, items, 500)
+	assert.NotEmpty(t, list.Path())
+	assert.NotEmpty(t, list.ETag)
+	assert.Len(t, list.IDs, 500)
 
-	for _, id := range items {
-		assert.GreaterOrEqual(t, id, 25000000)
+	for _, id := range list.IDs {
+		assert.GreaterOrEqual(t, int(id), 25000000)
 	}
+}
+
+func TestEtagsWithLists(t *testing.T) {
+	ctx := context.Background()
+
+	c, err := hn.DefaultClient(ctx)
+	require.NoError(t, err)
+
+	_, err = c.NewStories(ctx)
+	require.NoError(t, err)
+
+	_, err = c.NewStories(ctx)
+	require.NoError(t, err)
 }
 
 func TestUser(t *testing.T) {
@@ -114,6 +131,8 @@ func TestUser(t *testing.T) {
 		Karma:     0,
 		Submitted: []int{},
 	}
+	exp.SetPath("v0/user/jl")
+	exp.SetETag("rEOYAvfFkf7b/rd1XljYlShx4x8=")
 
 	assert.GreaterOrEqual(t, user.Karma, 4000)
 	assert.GreaterOrEqual(t, len(user.Submitted), 800)

@@ -25,6 +25,7 @@ Client provides a consistent interface to the HN API.
 type Client struct {
 	db           *db.Client
 	disableEtags bool
+	lists        map[string]IDList
 }
 
 /*
@@ -54,7 +55,8 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error
 	client, err := app.Database(ctx)
 
 	return &Client{
-		db: client,
+		db:    client,
+		lists: map[string]IDList{},
 	}, err
 }
 
@@ -62,14 +64,21 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error
 Item retrieves the news item with the provided id from the HN API.
 */
 func (c Client) Item(ctx context.Context, id int) (Item, error) {
-	ref := c.db.NewRef(fmt.Sprintf(ItemPath, id))
-	item := Item{}
+	item := Item{
+		remote: remote{
+			path: fmt.Sprintf(ItemPath, id),
+		},
+	}
 
-	return item, ref.Get(ctx, &item)
+	_, err := c.Update(ctx, &item)
+
+	return item, err
 }
 
 /*
-MaxItem returns the id of the last item created.
+MaxItem returns the id of the last item created.  The client never
+caches the maximum item id, nor does it use ETags to avoid retrieving
+the value from the server.
 */
 func (c Client) MaxItem(ctx context.Context) (int, error) {
 	ref := c.db.NewRef(MaxItemPath)
@@ -81,19 +90,65 @@ func (c Client) MaxItem(ctx context.Context) (int, error) {
 /*
 NewStories returns a list of item ids for the 500 newest stories.
 */
-func (c Client) NewStories(ctx context.Context) ([]int, error) {
-	ref := c.db.NewRef(NewStoriesPath)
-	idList := []int{}
+func (c Client) NewStories(ctx context.Context) (IDList, error) {
+	return c.list(ctx, NewStoriesPath)
+}
 
-	return idList, ref.Get(ctx, &idList)
+/*
+Update retrieves a new version of an HN Item, User or list (passed into
+the method as rem) if there is one available.  If ETags are disabled in
+the client, the remote object is retrieved from the server again and the
+boolean returned will alwasy indicated that the item was changed.  The
+default operation of the client is to check the ETags.  In this case,
+the returned boolean will indicate whether a new version of the object
+has been retrieved.
+*/
+func (c Client) Update(ctx context.Context, rem Remote) (bool, error) {
+	ref := c.db.NewRef(rem.Path())
+
+	if c.disableEtags {
+		return true, ref.Get(ctx, rem)
+	}
+
+	chngd, etag, err := ref.GetIfChanged(ctx, rem.ETag(), rem)
+	if err == nil && chngd {
+		rem.SetETag(etag)
+	}
+
+	return chngd, err
 }
 
 /*
 User retrieves the news item with the provided id from the HN API.
 */
 func (c Client) User(ctx context.Context, id string) (User, error) {
-	ref := c.db.NewRef(fmt.Sprintf(UserPath, id))
-	user := User{}
+	// ref := c.db.NewRef(fmt.Sprintf(UserPath, id))
+	user := User{
+		remote: remote{
+			path: fmt.Sprintf(UserPath, id),
+		},
+	}
 
-	return user, ref.Get(ctx, &user)
+	_, err := c.Update(ctx, &user)
+
+	return user, err
+}
+
+func (c Client) list(ctx context.Context, path string) (IDList, error) {
+	idList, ok := c.lists[path]
+	if !ok {
+		idList = IDList{
+			remote: remote{
+				path: path,
+			},
+			IDs: []ID{},
+		}
+	}
+
+	chngd, err := c.Update(ctx, &idList)
+	if chngd {
+		c.lists[path] = idList
+	}
+
+	return idList, err
 }
